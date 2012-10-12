@@ -1,5 +1,6 @@
 module SilentPostgresSchemaPlus
   SILENCED_METHODS = %w(indexes foreign_keys reverse_foreign_keys views view_definition)
+  SILENCER = Rails.version < '3.2' ? '@logger.silence' : 'quietly'
 
   def self.included(base)
     SILENCED_METHODS.each do |m|
@@ -10,7 +11,7 @@ module SilentPostgresSchemaPlus
   SILENCED_METHODS.each do |m|
     eval <<-METHOD
       def #{m}_with_silencer(*args)
-        @logger.silence do
+        #{SILENCER} do
           #{m}_without_silencer(*args)
         end
       end

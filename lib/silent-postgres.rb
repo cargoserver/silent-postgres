@@ -5,7 +5,8 @@ if Rails.env.development? || Rails.env.test?
 
   module SilentPostgres
     SILENCED_METHODS = %w(tables table_exists? indexes column_definitions pk_and_sequence_for last_insert_id)
-
+    SILENCER = Rails.version < '3.2' ? '@logger.silence' : 'quietly'
+    
     def self.included(base)
       SILENCED_METHODS.each do |m|
         base.send :alias_method_chain, m, :silencer
@@ -21,7 +22,7 @@ if Rails.env.development? || Rails.env.test?
 
       eval <<-METHOD
         def #{m1}_with_silencer#{m2}(*args)
-          @logger.silence do
+          #{SILENCER} do
             #{m1}_without_silencer#{m2}(*args)
           end
         end
